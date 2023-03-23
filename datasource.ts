@@ -10,11 +10,8 @@ export const AppDataSource = new DataSource({
     password: "Sa123456",
     database: "backendalterna",
     entities: [Heroe],
-    //synchronize: true,
-    logging: true,
-    options: {
-        encrypt: true,
-    },
+    logging: false,
+    options: { encrypt: false },
 })
 
 AppDataSource.initialize()

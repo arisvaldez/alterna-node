@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { AppDataSource } from "../../datasource";
 import { Heroe } from "../models/heroe.entity";
 
-
 const heroRepository = AppDataSource.getRepository(Heroe);
 
 export const getAll = async (req: Request, res: Response) => {
@@ -11,14 +10,14 @@ export const getAll = async (req: Request, res: Response) => {
     return res.json(heroes);
 }
 
-export const getById = async(req: Request, res: Response) =>{
+export const getById = async (req: Request, res: Response) => {
     const { id } = req.params;
 
     const hero = await heroRepository.findOneBy({ id: Number.parseInt(id) });
 
-    if(!hero) {
+    if (!hero) {
         return res.status(404).json({
-            message:`Hero with id: ${id}, not found`
+            message: `Hero with id: ${id}, not found`
         })
     }
 
@@ -30,68 +29,89 @@ export const getByAlte = async (req: Request, res: Response) => {
 
     const hero = await heroRepository.findOneBy({ alte });
 
-    if(!hero) {
+    if (!hero) {
         return res.status(404).json({
-            message:`Hero with Alte: ${alte}, not found`
+            message: `Hero with Alte: ${alte}, not found`
         })
     }
 
     res.json(hero);
 }
 
-export const create = (req: Request, res: Response) => {
+export const create = async (req: Request, res: Response) => {
 
-    /* const { alte, nombre } = req.body;
-    const hero = heroes2.find((hero) => hero.alte === alte);
+    const { alte, nombre } = req.body;
 
-    if (hero) {
-        return res.status(400).json(
-            {
-                message: `The hero ${alte} already exist`
-            }
-        )
+    const oldHero = await heroRepository.findOneBy({ alte });
+
+    if (oldHero) {
+        return res
+            .status(400)
+            .json({
+                message: `Hero ${alte} already exists`
+            })
     }
 
-    _id += 1;
-    const newHero = {
-        id: _id,
-        nombre,
-        alte
-    };
+    const newHero = heroRepository.create({ alte, nombre });
+    await heroRepository.insert(newHero);
 
-    heroes2.push(newHero);
-    res.status(201).json(newHero); */
+    res.json(newHero);
 }
 
-export const remove = (req: Request, res: Response) => {
-    /* const { alte } = req.params;
-    const index = heroes2.findIndex(
-        (hero) =>
-            hero.alte.toLowerCase() === alte.toLowerCase());
+export const remove = async (req: Request, res: Response) => {
 
-    if (index < 0) {
-        return res.status(404).json(`The hero ${alte} not found`)
-    }
-
-    const hero = heroes2.splice(index, 1);
-
-    res.json(hero); */
-}
-
-export const update = (req: Request, res: Response) => {
-   /*  const { alte, nombre } = req.body;
     const { id } = req.params;
 
-    const hero = heroes2.find((hero) => hero.id === Number.parseInt(id))
+    const oldHero = await heroRepository.findOneBy({ id: Number.parseInt(id) });
 
-    if (!hero) {
-        return res.status(401).json({
-            message: `The hero ${alte} not found`
-        })
+    if (!oldHero) {
+        return res
+            .status(404)
+            .json({
+                message: `Hero with id: ${id} not found`
+            })
     }
 
-    hero.alte = alte !== undefined ? alte : hero.alte;
-    hero.nombre = nombre !== undefined ? nombre : hero.alte;
+    const deletedHero = await heroRepository.delete({ id: Number.parseInt(id) });
 
-    res.json(hero); */
+    res.json({
+        affectedRows: deletedHero,
+    });
+}
+
+export const update = async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { alte, nombre } = req.body;
+
+    const heroById = await heroRepository.findOneBy({ id: Number.parseInt(id) });
+
+    if (!heroById) {
+        return res
+            .status(404)
+            .json({
+                message: `Hero with id ${id} not found`
+            })
+    }
+
+    if (alte) {
+        const oldHero = await heroRepository.findOneBy({ alte });
+
+        if (oldHero && oldHero.id !== Number.parseInt(id)) {
+            return res
+                .status(400)
+                .json({
+                    message: `Hero ${alte} already exists`
+                })
+        }
+    }
+
+    const updatedHero = heroRepository.create({
+        id: heroById.id,
+        alte: alte ? alte : heroById.alte,
+        nombre: nombre ? nombre : heroById.nombre
+    });
+
+    await heroRepository.save(updatedHero);
+
+    res.json(updatedHero);
 }

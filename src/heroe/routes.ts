@@ -1,14 +1,17 @@
 import { Router } from "express";
-import { getAll, getByName, create, remove, update } from "./controller";
+import { getAll, getByAlte, create, remove, update, getById } from "./controller";
+import { check } from "express-validator";
 
 export const heroeRoute = Router();
 
 heroeRoute.get('/', getAll);
 
-heroeRoute.get('/:alte', getByName);
+heroeRoute.get('/:id', getById);
+
+heroeRoute.get('/alte/:alte', getByAlte);
 
 heroeRoute.post('/', create);
 
-heroeRoute.delete('/:alte', remove);
+heroeRoute.delete('/:id', remove);
 
 heroeRoute.put('/:id', update);

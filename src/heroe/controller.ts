@@ -1,37 +1,48 @@
 import { Request, Response } from "express";
-import { Heroe as  HeroeModel } from "./interfaces";
 import { AppDataSource } from "../../datasource";
 import { Heroe } from "../models/heroe.entity";
 
-const heroes: HeroeModel[] = [];
-let _id = 0;
 
-export const getAll = (req: Request, res: Response) => {
+const heroRepository = AppDataSource.getRepository(Heroe);
 
-    const heroRepository = AppDataSource.getRepository(Heroe);
-    return res.json(heroRepository.find());
+export const getAll = async (req: Request, res: Response) => {
+
+    const heroes = await heroRepository.find();
+    return res.json(heroes);
 }
 
-export const getByName = (req: Request, res: Response) => {
-    const alte = req.params.alte;
+export const getById = async(req: Request, res: Response) =>{
+    const { id } = req.params;
 
-    const heroe = heroes.find((hero: HeroeModel) => hero.alte.toLowerCase() === alte.toLowerCase())
+    const hero = await heroRepository.findOneBy({ id: Number.parseInt(id) });
 
-    if (!heroe) {
-        return res.status(404).json(
-            {
-                message: 'Super Hero Not Found'
-            }
-        );
+    if(!hero) {
+        return res.status(404).json({
+            message:`Hero with id: ${id}, not found`
+        })
     }
 
-    res.json(heroe);
+    res.json(hero);
+}
+
+export const getByAlte = async (req: Request, res: Response) => {
+    const { alte } = req.params;
+
+    const hero = await heroRepository.findOneBy({ alte });
+
+    if(!hero) {
+        return res.status(404).json({
+            message:`Hero with Alte: ${alte}, not found`
+        })
+    }
+
+    res.json(hero);
 }
 
 export const create = (req: Request, res: Response) => {
 
-    const { alte, nombre } = req.body;
-    const hero = heroes.find((hero) => hero.alte === alte);
+    /* const { alte, nombre } = req.body;
+    const hero = heroes2.find((hero) => hero.alte === alte);
 
     if (hero) {
         return res.status(400).json(
@@ -48,13 +59,13 @@ export const create = (req: Request, res: Response) => {
         alte
     };
 
-    heroes.push(newHero);
-    res.status(201).json(newHero);
+    heroes2.push(newHero);
+    res.status(201).json(newHero); */
 }
 
 export const remove = (req: Request, res: Response) => {
-    const { alte } = req.params;
-    const index = heroes.findIndex(
+    /* const { alte } = req.params;
+    const index = heroes2.findIndex(
         (hero) =>
             hero.alte.toLowerCase() === alte.toLowerCase());
 
@@ -62,16 +73,16 @@ export const remove = (req: Request, res: Response) => {
         return res.status(404).json(`The hero ${alte} not found`)
     }
 
-    const hero = heroes.splice(index, 1);
+    const hero = heroes2.splice(index, 1);
 
-    res.json(hero);
+    res.json(hero); */
 }
 
 export const update = (req: Request, res: Response) => {
-    const { alte, nombre } = req.body;
+   /*  const { alte, nombre } = req.body;
     const { id } = req.params;
 
-    const hero = heroes.find((hero) => hero.id === Number.parseInt(id))
+    const hero = heroes2.find((hero) => hero.id === Number.parseInt(id))
 
     if (!hero) {
         return res.status(401).json({
@@ -82,5 +93,5 @@ export const update = (req: Request, res: Response) => {
     hero.alte = alte !== undefined ? alte : hero.alte;
     hero.nombre = nombre !== undefined ? nombre : hero.alte;
 
-    res.json(hero);
+    res.json(hero); */
 }

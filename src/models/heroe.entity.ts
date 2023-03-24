@@ -10,6 +10,6 @@ export class Heroe {
     nombre!: string
 
     @Column('text')
-    alter!: string
+    alte!: string
 
 }

@@ -1,12 +1,18 @@
 import { Request, Response } from "express";
 import { AppDataSource } from "../../datasource";
-import { Heroe } from "../models/heroe.entity";
+import { Personaje } from "../models/personaje.entity";
 
-const heroRepository = AppDataSource.getRepository(Heroe);
+const heroRepository = AppDataSource.getRepository(Personaje);
 
 export const getAll = async (req: Request, res: Response) => {
 
-    const heroes = await heroRepository.find();
+    const { rol } = req.params;
+    
+    const heroes = await heroRepository.find({
+        where: {
+            rol
+        }
+    });
     return res.json(heroes);
 }
 
@@ -40,7 +46,7 @@ export const getByAlte = async (req: Request, res: Response) => {
 
 export const create = async (req: Request, res: Response) => {
 
-    const { alte, nombre } = req.body;
+    const { alte, nombre, rol } = req.body;
 
     const oldHero = await heroRepository.findOneBy({ alte });
 
@@ -52,7 +58,7 @@ export const create = async (req: Request, res: Response) => {
             })
     }
 
-    const newHero = heroRepository.create({ alte, nombre });
+    const newHero = heroRepository.create({ alte, nombre, rol });
     await heroRepository.insert(newHero);
 
     res.json(newHero);
@@ -81,7 +87,7 @@ export const remove = async (req: Request, res: Response) => {
 
 export const update = async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { alte, nombre } = req.body;
+    const { alte, nombre, rol } = req.body;
 
     const heroById = await heroRepository.findOneBy({ id: Number.parseInt(id) });
 
@@ -108,7 +114,8 @@ export const update = async (req: Request, res: Response) => {
     const updatedHero = heroRepository.create({
         id: heroById.id,
         alte: alte ? alte : heroById.alte,
-        nombre: nombre ? nombre : heroById.nombre
+        nombre: nombre ? nombre : heroById.nombre,
+        rol: rol ? rol : heroById.rol
     });
 
     await heroRepository.save(updatedHero);
